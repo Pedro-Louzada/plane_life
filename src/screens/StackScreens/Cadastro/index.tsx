@@ -10,6 +10,7 @@ import IDataUser from '../../../../src/shared/interfaces/IDataUser';
 
 async function getTokenByUserInfos({email, password}: IDataUser) {
   try {
+    //codificando username e password para passar nos parâmetros da rota "/token"
     let formDataUsername = `${encodeURIComponent(
       'username',
     )}=${encodeURIComponent(email)}`;
@@ -19,7 +20,6 @@ async function getTokenByUserInfos({email, password}: IDataUser) {
     let dinamicPartOfUrl = `${formDataUsername}&${formDataPaswword}`;
 
     const response = await axiosInstance.post('/token', dinamicPartOfUrl);
-    console.log(response.data);
     let token = response.data;
 
     return token;
