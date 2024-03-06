@@ -1,47 +1,24 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {Text, View, StyleSheet, TextInput} from 'react-native';
 import DefaultButton from '../../../shared/components/buttons_app/default_button';
 import BtnLink from '../../../shared/components/buttons_app/btn_link';
-import {useDataUser} from '../../../shared/context/ContextDataUser';
 import {AxiosError} from 'axios';
 import axiosInstance from '../../../../src/shared/config_axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import IDataUser from '../../../../src/shared/interfaces/IDataUser';
-
-async function getTokenByUserInfos({email, password}: IDataUser) {
-  try {
-    //codificando username e password para passar nos parâmetros da rota "/token"
-    let formDataUsername = `${encodeURIComponent(
-      'username',
-    )}=${encodeURIComponent(email)}`;
-    let formDataPaswword = `${encodeURIComponent(
-      'password',
-    )}=${encodeURIComponent(password)}`;
-    let dinamicPartOfUrl = `${formDataUsername}&${formDataPaswword}`;
-
-    const response = await axiosInstance.post('/token', dinamicPartOfUrl);
-    let token = response.data;
-
-    return token;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      // O servidor respondeu com um código de status diferente de 2xx
-      console.error(error.response?.data.detail);
-    }
-    return false;
-  }
-}
 
 function Cadastrar() {
-  const {dataUser, setDataUser} = useDataUser();
+  const [userInfosRegister, setUserNameRegister] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
   //referência do input de email após submeter o nome
   const email = useRef<TextInput>(null);
   //referência do input de senha após submeter o email
   const password = useRef<TextInput>(null);
   //callback para chamar a função setDataUser e manipular meu estado
   const handleChangeInput = (atributo: string, text: string) => {
-    setDataUser({
-      ...dataUser,
+    setUserNameRegister({
+      ...userInfosRegister,
       [atributo]: text,
     });
   };
@@ -49,26 +26,14 @@ function Cadastrar() {
   //callback responsável pela chamada da POST Request ("/create")
   const handleCadastroClick = async (): Promise<boolean> => {
     try {
-      const response = await axiosInstance.post('/users/create', dataUser);
-      console.log(response);
-      console.log(response.data.id);
+      const response = await axiosInstance.post(
+        '/users/create',
+        userInfosRegister,
+      );
       let status = response.status;
 
       if (status === 201) {
-        let createUserAndGetToken = false;
-        setDataUser({...dataUser, id: response.data.id});
-        await AsyncStorage.setItem('@asycnStorage:emailUser', dataUser.email);
-        await AsyncStorage.setItem('@asycnStorage:passUser', dataUser.password);
-        let tokenAuthentication = await getTokenByUserInfos(dataUser);
-        if (tokenAuthentication) {
-          await AsyncStorage.setItem(
-            '@asyncStorage:token',
-            tokenAuthentication,
-          );
-          setDataUser({...dataUser, token_authentication: tokenAuthentication});
-          createUserAndGetToken = true;
-        }
-        return createUserAndGetToken;
+        return true;
       } else {
         console.log(response);
         return false;
@@ -92,7 +57,7 @@ function Cadastrar() {
           <TextInput
             id="nome"
             style={estilos.input}
-            value={dataUser?.name}
+            value={userInfosRegister.name}
             onChangeText={text => handleChangeInput('name', text)}
             onSubmitEditing={() => email.current && email.current.focus()}
             returnKeyType="next"
@@ -102,7 +67,7 @@ function Cadastrar() {
             ref={email}
             id="email"
             style={estilos.input}
-            value={dataUser?.email}
+            value={userInfosRegister.email}
             onChangeText={text => handleChangeInput('email', text)}
             returnKeyType="next"
             onSubmitEditing={() => password.current && password.current.focus()}
@@ -113,7 +78,7 @@ function Cadastrar() {
             id="senha"
             returnKeyType="done"
             style={estilos.input}
-            value={dataUser?.password}
+            value={userInfosRegister.password}
             onChangeText={text => handleChangeInput('password', text)}
           />
           <Text style={estilos.esqueceuSenha}>Esqueceu sua senha ?</Text>

@@ -5,46 +5,84 @@ import DefaultButton from '../../../shared/components/buttons_app/default_button
 import BtnLink from '../../../shared/components/buttons_app/btn_link';
 import HeaderNavigate from '../../../shared/components/HeaderNavigate';
 import {useDataUser} from '../../../shared/context/ContextDataUser';
-import {AxiosError, AxiosResponse} from 'axios';
-import IDataUser from '../../../shared/interfaces/IDataUser';
+import {AxiosError} from 'axios';
 import axiosInstance from '../../../shared/config_axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Login() {
   //chamada do userContext
   const {dataUser, setDataUser} = useDataUser();
+
   //referência do input de senha após submeter o email
   const passwordLogin = useRef<TextInput>(null);
+
   //estados intermediários responsáveis para comparar com o estado original do usuário
   const [inputLogin, setInputEmail] = useState('');
   const [inputPassword, setInputPassword] = useState('');
+
   //callback responsável pela chamada da função controladora do emailState
   const changeInpuEmail = (text: string) => {
     setInputEmail(text);
   };
+
   //callback responsável pela chamada da função controladora do passwordState
   const changeInpuSenha = (text: string) => {
     setInputPassword(text);
   };
+
+  async function getTokenByUserInfos(
+    inputLogin: string,
+    inputPassword: string,
+  ): Promise<boolean> {
+    try {
+      //codificando username e password para passar nos parâmetros da rota "/token"
+      let formDataUsername = `${encodeURIComponent(
+        'username',
+      )}=${encodeURIComponent(inputLogin)}`;
+      let formDataPaswword = `${encodeURIComponent(
+        'password',
+      )}=${encodeURIComponent(inputPassword)}`;
+      let dinamicPartOfUrl = `${formDataUsername}&${formDataPaswword}`;
+
+      const response = await axiosInstance.post('/token', dinamicPartOfUrl);
+      const status = response.status;
+
+      if (status === 200) {
+        let token = response.data.access_token;
+        await AsyncStorage.setItem('@asyncStorage:token', token);
+        setDataUser({...dataUser, token_authentication: token});
+        let infosUser = response.data.user;
+        setDataUser({
+          ...dataUser,
+          name: infosUser.name,
+          email: infosUser.email,
+          password: infosUser.password,
+          id: infosUser.id,
+          type_profile: infosUser.type_profile,
+        });
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        // O servidor respondeu com um código de status diferente de 2xx
+        console.error(error.response?.data.detail);
+      }
+      return false;
+    }
+  }
+
   //callback responsável pela chamada da GET Request("/users") e pela busca do usuário no banco de dados
   const handleLoginClick = async (): Promise<boolean> => {
     try {
-      if (!dataUser) {
-        const response: AxiosResponse<IDataUser[]> = await axiosInstance.get(
-          '/users',
-        );
-        let arrayUsers = response.data;
-        let findUser = arrayUsers.find(
-          item => inputLogin === item.email && inputPassword === item.password,
-        );
-        if (findUser) {
-          const {email, name, id, password, type_profile} = findUser;
-          setDataUser({email, name, id, password, type_profile});
-        }
-        return findUser ? true : false;
+      let workLogin = getTokenByUserInfos(inputLogin, inputPassword);
+      if (!workLogin) {
+        return false;
       }
-      return (
-        inputLogin === dataUser.email && inputPassword === dataUser.password
-      );
+
+      return true;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         // O servidor respondeu com um código de status diferente de 2xx

@@ -1,9 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+// import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 function HeaderTabScreen() {
   return (
     <View style={estilos.header}>
+      {/* <FontAwesome name="user-o" size={28} color={'#FFF'} />; */}
       <Text style={estilos.headerTitle}>Bem vindo(a) usuário</Text>
     </View>
   );

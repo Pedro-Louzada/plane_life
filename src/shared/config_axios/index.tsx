@@ -8,7 +8,10 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   async config => {
-    if (config.url?.includes('/users/create')) {
+    if (
+      config.url?.includes('/users/create') ||
+      config.url?.includes('/token')
+    ) {
       return config;
     }
     const token = await AsyncStorage.getItem('@asyncStorage:token');
