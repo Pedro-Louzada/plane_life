@@ -23,7 +23,7 @@ export function CustomTabBar({
               iconName = 'wallet';
               break;
             case 'Trilhagem':
-              iconName = 'send-o';
+              iconName = 'send';
               break;
           }
           const isFocused = state.index === index;
@@ -60,17 +60,18 @@ export function CustomTabBar({
               testID={options.tabBarTestID}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={estilos.buttonTab}>
+              style={estilos.buttonTab}
+              key={route.key}>
               <View style={{alignItems: 'center', padding: 4}}>
                 <View
                   style={[
                     estilos.innerButton,
-                    {backgroundColor: isFocused ? '#f8e2fd' : '#transparent'},
+                    {backgroundColor: isFocused ? '#B5BFFF' : 'transparent'},
                   ]}>
                   <MaterialIcons
                     name={iconName}
                     size={34}
-                    color={isFocused ? '#8f2abd' : '535353'}
+                    color={isFocused ? '#1534FF' : '#535353'}
                   />
                 </View>
               </View>
@@ -96,7 +97,7 @@ const estilos = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    gap: 20,
+    gap: 8,
     elevation: 10,
     shadowColor: '#000',
     shadowOffset: {

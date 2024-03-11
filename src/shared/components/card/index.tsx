@@ -26,7 +26,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    marginRight: 4,
+    marginHorizontal: 4,
     borderRadius: 10,
   },
   sigla: {

@@ -43,7 +43,6 @@ function DefaultButton({
   const estilosVariable = estilosFuncao(margin, backGroundColor, color);
   const message = messageAlert(nameScreen);
   const {dataUser} = useDataUser();
-  let typeProfile = dataUser?.type_profile;
   return (
     <TouchableOpacity
       style={estilosVariable.marginVariable}
@@ -51,7 +50,9 @@ function DefaultButton({
         const foundUser = await aoPressionar();
         if (foundUser) {
           Snackbar.show({text: message.sucessMessage});
-          navigation.navigate(typeProfile ? 'TelaHome' : nameScreen);
+          console.log('achou usuario?', foundUser);
+          console.log('tipo de perfil:', dataUser?.type_profile);
+          navigation.navigate(dataUser?.type_profile ? 'TelaHome' : nameScreen);
         } else {
           Snackbar.show({text: message.errorMessage});
         }

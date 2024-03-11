@@ -48,17 +48,13 @@ function Login() {
       const status = response.status;
 
       if (status === 200) {
-        let token = response.data.access_token;
+        let token = response?.data.access_token;
         await AsyncStorage.setItem('@asyncStorage:token', token);
         setDataUser({...dataUser, token_authentication: token});
-        let infosUser = response.data.user;
+        let infosUser = response?.data.user;
         setDataUser({
           ...dataUser,
-          name: infosUser.name,
-          email: infosUser.email,
-          password: infosUser.password,
-          id: infosUser.id,
-          type_profile: infosUser.type_profile,
+          ...infosUser,
         });
 
         return true;

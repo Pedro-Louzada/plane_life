@@ -31,7 +31,7 @@ const HandlePassedNextPage = async (
   {dataUser, setDataUser}: IDataUserContextProviderValues,
 ) => {
   setDataUser({...dataUser, type_profile: tipo});
-
+  console.log(dataUser);
   const id = dataUser.id;
 
   try {

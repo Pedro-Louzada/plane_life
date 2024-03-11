@@ -64,7 +64,7 @@ const estilos = StyleSheet.create({
     marginBottom: 12,
   },
   reservaDiaria: {
-    marginLeft: 30,
+    // marginLeft: 30,
     flexDirection: 'row',
   },
   semReserva: {
