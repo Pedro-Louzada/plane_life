@@ -48,9 +48,11 @@ function Login() {
       const status = response.status;
 
       if (status === 200) {
+        console.log(response.data);
         let token = response?.data.access_token;
         await AsyncStorage.setItem('@asyncStorage:token', token);
         setDataUser({...dataUser, token_authentication: token});
+
         let infosUser = response?.data.user;
         setDataUser({
           ...dataUser,
@@ -73,7 +75,7 @@ function Login() {
   //callback responsável pela chamada da GET Request("/users") e pela busca do usuário no banco de dados
   const handleLoginClick = async (): Promise<boolean> => {
     try {
-      let workLogin = getTokenByUserInfos(inputLogin, inputPassword);
+      let workLogin = await getTokenByUserInfos(inputLogin, inputPassword);
       if (!workLogin) {
         return false;
       }
