@@ -50,8 +50,6 @@ function DefaultButton({
         const foundUser = await aoPressionar();
         if (foundUser) {
           Snackbar.show({text: message.sucessMessage});
-          console.log('achou usuario?', foundUser);
-          console.log('tipo de perfil:', dataUser?.type_profile);
           navigation.navigate(dataUser?.type_profile ? 'TelaHome' : nameScreen);
         } else {
           Snackbar.show({text: message.errorMessage});

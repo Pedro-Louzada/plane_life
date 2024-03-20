@@ -31,24 +31,24 @@ function Login() {
   };
 
   async function getTokenByUserInfos(
-    inputLogin: string,
-    inputPassword: string,
+    username: string,
+    password: string,
   ): Promise<boolean> {
     try {
       //codificando username e password para passar nos parâmetros da rota "/token"
       let formDataUsername = `${encodeURIComponent(
         'username',
-      )}=${encodeURIComponent(inputLogin)}`;
+      )}=${encodeURIComponent(username)}`;
       let formDataPaswword = `${encodeURIComponent(
         'password',
-      )}=${encodeURIComponent(inputPassword)}`;
+      )}=${encodeURIComponent(password)}`;
       let dinamicPartOfUrl = `${formDataUsername}&${formDataPaswword}`;
-
       const response = await axiosInstance.post('/token', dinamicPartOfUrl);
+      console.log(response.data);
+
       const status = response.status;
 
       if (status === 200) {
-        console.log(response.data);
         let token = response?.data.access_token;
         await AsyncStorage.setItem('@asyncStorage:token', token);
         setDataUser({...dataUser, token_authentication: token});
