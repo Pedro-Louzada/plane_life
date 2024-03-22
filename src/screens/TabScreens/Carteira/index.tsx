@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -12,6 +12,9 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import axiosInstance from '../../../../src/shared/config_axios';
 import {AxiosError} from 'axios';
 import {useDataUser} from '../../../../src/shared/context/ContextDataUser';
+import {useInfoWalletUser} from '../../../../src/shared/context/ContextInfoWalletUser';
+import CardInfoWallet from '../../../../src/shared/components/CardInfoWallet';
+import IInfoWalletUser from '../../../../src/shared/interfaces/IInfoWalletUser';
 
 const tagsOfWallet = [
   {id: 0, tag: 'Reserva Mensal'},
@@ -27,9 +30,75 @@ function Carteira() {
   const [idOfTag, setIdOfTag] = useState(0);
   const [nameTag, setNameTag] = useState('');
   const [valueTag, setValueTag] = useState('');
-  const [hideValue, setHideValue] = useState(false);
 
   const {dataUser} = useDataUser();
+  const {infoWalletUser, setInfoWalletUser} = useInfoWalletUser();
+
+  useEffect(() => {
+    async function getInfoWalletUser() {
+      const idUserForGetInfos = dataUser.id;
+      try {
+        const response = await axiosInstance.get(
+          `/portifolio-datas/${idUserForGetInfos}`,
+        );
+
+        if (response) {
+          let statusGetInfoWallet = response.status;
+          if (statusGetInfoWallet === 201) {
+            let data = response.data;
+            setInfoWalletUser({...infoWalletUser, ...data});
+            return true;
+          }
+
+          return false;
+        }
+
+        return false;
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          // O servidor respondeu com um código de status diferente de 2xx
+          console.error(error.response?.data.detail[0].msg);
+        }
+        console.log(error);
+        return false;
+      }
+    }
+    getInfoWalletUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    async function getInfoWalletUser() {
+      const idUserForGetInfos = dataUser.id;
+      try {
+        const response = await axiosInstance.get(
+          `/portifolio-datas/${idUserForGetInfos}`,
+        );
+
+        if (response) {
+          let statusGetInfoWallet = response.status;
+          if (statusGetInfoWallet === 201) {
+            let data = response.data;
+            setInfoWalletUser({...infoWalletUser, ...data});
+            return true;
+          }
+
+          return false;
+        }
+
+        return false;
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          // O servidor respondeu com um código de status diferente de 2xx
+          console.error(error.response?.data.detail[0].msg);
+        }
+        console.log(error);
+        return false;
+      }
+    }
+    getInfoWalletUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [infoWalletUser]);
 
   const postInfosToWallet = async (
     idOfTag: number,
@@ -39,25 +108,38 @@ function Carteira() {
     try {
       const balanceNumber = Number(valueTag);
       const idUser = dataUser.id;
-      const response = await axiosInstance.post('', {
-        tag: idOfTag,
+      const response = await axiosInstance.post('/portfolio-datas/create', {
         name: nameTag,
-        balance: balanceNumber,
-        id: idUser,
+        id_user: idUser,
+        value: balanceNumber,
+        tag: idOfTag,
+        installment: 0,
       });
+
+      setIdOfTag(0);
+      setPlaceHolder('Tag');
+      setNameTag('');
+      setValueTag('');
+
+      console.log(response);
 
       if (response) {
         let status = response.status;
 
-        if (status === 200) {
+        if (status === 201) {
+          const data = response.data;
+          setInfoWalletUser({...infoWalletUser, ...data});
           return true;
         }
 
         return false;
       }
-
       return false;
     } catch (error: unknown) {
+      setIdOfTag(0);
+      setPlaceHolder('Tag');
+      setNameTag('');
+      setValueTag('');
       if (error instanceof AxiosError) {
         // O servidor respondeu com um código de status diferente de 2xx
         console.error(error.response?.data.detail[0].msg);
@@ -67,19 +149,33 @@ function Carteira() {
     }
   };
 
+  function findTagIntoArray(
+    infoWalletUser: IInfoWalletUser[],
+    tagInfo: number,
+  ) {
+    let arrayFirstTag: IInfoWalletUser[] = [];
+    let findTagRenda = infoWalletUser.map(item => {
+      let intTag = parseInt(item.tag);
+      if (intTag === tagInfo) {
+        arrayFirstTag.push(item);
+      }
+    });
+
+    if (findTagRenda) {
+      arrayFirstTag.map(item => <CardInfoWallet {...item} />);
+    }
+
+    return <Text>Cadastre dados referente a esta tag</Text>;
+  }
+
   return (
     <View style={estilos.backWhite}>
       <View style={estilos.header}>
-        <Text style={estilos.headerTitle}>Seu saldo atual</Text>
+        <Text style={estilos.headerTitle}>Seu balanço geral</Text>
         <Text style={estilos.saldo}>R$ 2.000,00</Text>
       </View>
       <TouchableOpacity
-        style={{
-          justifyContent: 'flex-end',
-          marginRight: 50,
-          marginBottom: 25,
-          flexDirection: 'row',
-        }}
+        style={estilos.callToActionButton}
         onPress={() => setOpenView(!openView)}>
         <Text style={estilos.callToActionForRegisterInfos}>
           Cadastrar dados
@@ -138,35 +234,22 @@ function Carteira() {
           />
           <TouchableOpacity
             style={estilos.buttonPostInfosWallet}
-            onPress={() => postInfosToWallet(saveTag, nameTag, valueTag)}>
+            onPress={() => {
+              postInfosToWallet(idOfTag, nameTag, valueTag);
+              setOpenView(!openView);
+            }}>
             <Text style={{fontSize: 16, color: '#FFF', fontWeight: 'bold'}}>
               Salvar dados
             </Text>
           </TouchableOpacity>
         </View>
       )}
-      <Text
-        style={{
-          textAlign: 'left',
-          marginLeft: 25,
-          fontSize: 20,
-          fontWeight: 'bold',
-        }}>
-        Renda mensal
-      </Text>
-      <TouchableOpacity
-        style={estilos.viewMainInfoWallet}
-        onPress={() => setHideValue(!hideValue)}>
-        <Text style={estilos.dataOfRegisterItem}>19/03/2024</Text>
-        <View style={estilos.boxValueOfWalletItem}>
-          <Text style={estilos.titleOfWalletItem}>Salário</Text>
-          {hideValue ? (
-            <Text style={estilos.valueOfWalletItem}>R$ 200,00</Text>
-          ) : (
-            <View style={estilos.hideValueOfItem} />
-          )}
-        </View>
-      </TouchableOpacity>
+      <Text style={estilos.nameTag}>Renda mensal</Text>
+      {infoWalletUser ? (
+        findTagIntoArray(infoWalletUser, 0)
+      ) : (
+        <Text>Cadastre dados referente a esta tag</Text>
+      )}
     </View>
   );
 }
@@ -240,7 +323,7 @@ const estilos = StyleSheet.create({
   },
   inputArea: {
     marginHorizontal: 25,
-    marginTop: -20,
+    marginTop: -10,
     alignItems: 'center',
     marginBottom: 10,
   },
@@ -265,37 +348,6 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4960F9',
   },
-  viewMainInfoWallet: {
-    marginHorizontal: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomColor: '#DADADA',
-    borderBottomWidth: 0.5,
-  },
-  boxValueOfWalletItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  valueOfWalletItem: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2ECC71',
-  },
-  titleOfWalletItem: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dataOfRegisterItem: {
-    color: '#DADADA',
-    fontWeight: 'bold',
-  },
-  hideValueOfItem: {
-    width: 80,
-    height: 10,
-    marginTop: 10,
-    backgroundColor: '#DADADA',
-  },
   buttonPostInfosWallet: {
     width: '50%',
     borderRadius: 10,
@@ -305,6 +357,18 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-end',
     marginRight: 25,
+  },
+  nameTag: {
+    textAlign: 'left',
+    marginLeft: 25,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  callToActionButton: {
+    justifyContent: 'flex-end',
+    marginRight: 50,
+    marginBottom: 25,
+    flexDirection: 'row',
   },
 });
 

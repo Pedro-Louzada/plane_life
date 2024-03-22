@@ -7,6 +7,7 @@ import Carteira from '../../../screens/TabScreens/Carteira';
 import Principal from '../../../screens/TabScreens/Principal';
 import Trilhagem from '../../../screens/TabScreens/Trilhagem';
 import {CustomTabBar} from '../../components/CustomTabBar';
+import {InfoWalletUserContextProvider} from '../../context/ContextInfoWalletUser';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,25 +21,27 @@ function RoutesTabs() {
   };
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#2B47FC',
-        //tabBar "esconder" quando o teclado está ativo
-        tabBarHideOnKeyboard: true,
-        //config para retirar o label do tabBar
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          backgroundColor: '#FFF',
-          borderTopWidth: 0,
-        },
-      }}
-      //propriedade para estilizar o corpo do tabbar, espera um ReactComponent
-      tabBar={renderCustomTabBar}>
-      <Tab.Screen name="Principal" component={Principal} />
-      <Tab.Screen name="Carteira" component={Carteira} />
-      <Tab.Screen name="Trilhagem" component={Trilhagem} />
-    </Tab.Navigator>
+    <InfoWalletUserContextProvider>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#2B47FC',
+          //tabBar "esconder" quando o teclado está ativo
+          tabBarHideOnKeyboard: true,
+          //config para retirar o label do tabBar
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            backgroundColor: '#FFF',
+            borderTopWidth: 0,
+          },
+        }}
+        //propriedade para estilizar o corpo do tabbar, espera um ReactComponent
+        tabBar={renderCustomTabBar}>
+        <Tab.Screen name="Principal" component={Principal} />
+        <Tab.Screen name="Carteira" component={Carteira} />
+        <Tab.Screen name="Trilhagem" component={Trilhagem} />
+      </Tab.Navigator>
+    </InfoWalletUserContextProvider>
   );
 }
 
